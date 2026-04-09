@@ -1,0 +1,523 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,sans-serif;background:#1a1c6e;min-height:100vh;display:flex;align-items:center;justify-content:center;}
+#app{width:100%;max-width:400px;min-height:680px;background:#2B2D8F;border-radius:28px;overflow:hidden;display:flex;flex-direction:column;position:relative;margin:0 auto;}
+.screen{display:none;flex-direction:column;flex:1;}
+.screen.active{display:flex;}
+
+/* SPLASH */
+#splash{background:#2B2D8F;align-items:center;}
+.splash-hero{width:100%;height:230px;display:flex;align-items:center;justify-content:center;font-size:80px;background:#3538b5;border-radius:0 0 60% 60%/0 0 40px 40px;}
+.splash-card{background:#fff;border-radius:28px 28px 0 0;padding:32px 24px 36px;flex:1;display:flex;flex-direction:column;gap:16px;margin-top:-16px;}
+.splash-card h3{color:#B93C2A;font-size:14px;font-weight:700;}
+.splash-card input{width:100%;border:1.5px solid #ccc;border-radius:10px;padding:12px 14px;font-size:15px;outline:none;}
+.splash-card input:focus{border-color:#4A4FCF;}
+.tagline{color:#b5a07a;font-size:16px;text-align:center;font-style:italic;}
+.dots{display:flex;gap:6px;justify-content:center;}
+.dot{width:24px;height:5px;border-radius:3px;background:#ddd;}
+.dot.active{background:#4A4FCF;}
+.btn-circle{width:54px;height:54px;border-radius:50%;background:#4A90E2;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;align-self:center;margin-top:8px;}
+.btn-circle svg{width:22px;height:22px;fill:white;}
+.btn-circle:hover{background:#357ABD;}
+
+/* LANG BAR */
+.lang-bar{display:flex;gap:8px;align-items:center;justify-content:flex-end;padding:10px 16px 0;}
+.lang-btn{background:rgba(255,255,255,0.15);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;}
+.lang-btn.active{background:rgba(255,255,255,0.35);}
+.font-bar{display:flex;gap:6px;align-items:center;padding:0 16px 8px;justify-content:flex-end;}
+.font-btn{background:rgba(255,255,255,0.15);color:#fff;border:none;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:12px;}
+
+/* DISASTER SELECT */
+#disaster-select{background:#2B2D8F;padding:0 0 24px;}
+.ds-header{padding:28px 20px 16px;text-align:center;}
+.ds-header p{color:#E8A838;font-size:16px;font-weight:600;}
+.ds-header h2{color:#fff;font-size:28px;font-weight:800;letter-spacing:1px;}
+.disaster-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 24px;}
+.disaster-card{background:#3538b5;border-radius:16px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;border:2px solid transparent;transition:all 0.2s;}
+.disaster-card:hover,.disaster-card.sel{border-color:#fff;background:#4A4FCF;}
+.disaster-card .icon{font-size:44px;line-height:1;}
+.disaster-card span{color:#fff;font-size:13px;font-weight:600;}
+
+/* LEVEL MAP */
+#level-map{background:#2B2D8F;padding:0 0 24px;}
+.map-header{display:flex;align-items:center;padding:20px 16px 8px;gap:12px;}
+.back-btn{background:rgba(255,255,255,0.15);color:#fff;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:18px;}
+.map-header h2{color:#fff;font-size:18px;font-weight:700;flex:1;text-align:center;}
+.level-path{display:flex;flex-direction:column;align-items:center;gap:0;padding:16px 20px;}
+.level-node{display:flex;align-items:center;gap:12px;width:100%;}
+.level-node.right{flex-direction:row-reverse;}
+.hex{width:60px;height:60px;background:#6B6FD8;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;flex-shrink:0;transition:all 0.2s;}
+.hex.unlocked{background:#4A90E2;cursor:pointer;}
+.hex.unlocked:hover{background:#357ABD;}
+.hex.current{background:#4A90E2;box-shadow:0 0 0 3px #fff;}
+.hex.gift{background:#E8A838;}
+.hex.done{background:#27ae60;}
+.level-connector{width:3px;height:32px;background:#4A4FCF;margin-left:29px;}
+.level-label{color:#fff;font-size:14px;font-weight:600;}
+.level-sublabel{color:rgba(255,255,255,0.6);font-size:11px;}
+
+/* QUIZ */
+#quiz-screen{background:#2B2D8F;}
+.quiz-header{display:flex;align-items:center;padding:16px 16px 8px;gap:12px;}
+.quiz-header h3{color:#fff;font-size:16px;font-weight:700;flex:1;text-align:center;}
+.progress-bar{margin:0 16px 12px;background:rgba(255,255,255,0.2);border-radius:10px;height:7px;overflow:hidden;}
+.progress-fill{height:100%;background:#4A90E2;border-radius:10px;transition:width 0.4s;}
+.question-card{background:#fff;border-radius:20px;margin:0 16px;padding:0 0 16px;overflow:hidden;}
+.q-image{width:100%;height:150px;object-fit:cover;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:60px;}
+.q-text{padding:14px 16px 0;font-size:14px;line-height:1.5;color:#222;font-weight:500;}
+.options{display:flex;flex-direction:column;gap:10px;padding:16px 16px 0;}
+.option-btn{background:#3538b5;color:#fff;border:none;border-radius:12px;padding:14px 18px;font-size:14px;font-weight:600;cursor:pointer;text-align:center;transition:all 0.2s;}
+.option-btn:hover:not(:disabled){background:#4A4FCF;}
+.option-btn.correct{background:#27ae60;}
+.option-btn.wrong{background:#e74c3c;}
+.option-btn.dim{opacity:0.4;}
+.feedback-box{margin:12px 16px 0;background:rgba(255,255,255,0.12);border-radius:12px;padding:12px 14px;}
+.feedback-box p{color:#fff;font-size:13px;line-height:1.5;}
+.next-btn{margin:12px 16px 0;background:#4A90E2;color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;width:calc(100% - 32px);}
+.next-btn:hover{background:#357ABD;}
+.score-badge{background:rgba(255,255,255,0.15);border-radius:10px;padding:4px 10px;color:#fff;font-size:13px;font-weight:600;}
+
+/* RESULTS */
+#results{background:#2B2D8F;align-items:center;justify-content:center;padding:32px 24px;}
+.result-icon{width:90px;height:90px;background:#4A90E2;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:42px;margin-bottom:16px;}
+#results h2{color:#fff;font-size:28px;font-weight:800;margin-bottom:12px;text-align:center;}
+.stars{display:flex;gap:6px;margin-bottom:12px;}
+.star{font-size:32px;}
+#results p{color:#fff;font-size:16px;font-weight:700;margin-bottom:28px;}
+.res-btns{display:flex;flex-direction:column;gap:12px;width:100%;}
+.res-btn{padding:16px;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;border:none;text-align:center;}
+.res-btn.primary{background:#4A90E2;color:#fff;}
+.res-btn.secondary{background:#3538b5;color:#fff;}
+.res-btn:hover{opacity:0.9;}
+.wrong-answers{background:rgba(255,255,255,0.1);border-radius:12px;padding:12px 14px;width:100%;margin-bottom:16px;}
+.wrong-answers p{color:#fff;font-size:12px;line-height:1.6;}
+
+/* CERTIFICATE */
+#certificate{background:#fff;padding:0;align-items:center;}
+.cert-inner{background:linear-gradient(135deg,#2B2D8F,#4A4FCF);width:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;}
+.cert-border{border:3px solid rgba(255,255,255,0.4);border-radius:20px;padding:28px 20px;width:100%;}
+.cert-border h4{color:#E8A838;font-size:13px;letter-spacing:2px;margin-bottom:8px;}
+.cert-border h2{color:#fff;font-size:22px;font-weight:800;margin-bottom:6px;}
+.cert-border .cert-name{color:#E8A838;font-size:26px;font-weight:800;margin:12px 0;}
+.cert-border p{color:rgba(255,255,255,0.8);font-size:13px;line-height:1.5;margin-bottom:12px;}
+.cert-score{background:rgba(255,255,255,0.15);border-radius:10px;padding:10px 20px;display:inline-block;color:#fff;font-size:18px;font-weight:700;margin-bottom:16px;}
+.cert-btn{background:#E8A838;color:#fff;border:none;border-radius:12px;padding:14px 28px;font-size:15px;font-weight:700;cursor:pointer;margin-top:12px;}
+
+/* ACCESSIBILITY */
+#settings-bar{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(0,0,0,0.2);}
+#settings-bar label{color:rgba(255,255,255,0.7);font-size:11px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- SETTINGS BAR (always visible) -->
+<div id="settings-bar">
+  <div style="display:flex;gap:4px;align-items:center;">
+    <label>Lang:</label>
+    <button class="lang-btn active" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" onclick="setLang('hi')">HI</button>
+    <button class="lang-btn" onclick="setLang('mr')">MR</button>
+  </div>
+  <div style="display:flex;gap:4px;align-items:center;">
+    <label>Font:</label>
+    <button class="font-btn" onclick="setFont(-1)">A-</button>
+    <button class="font-btn" onclick="setFont(1)">A+</button>
+  </div>
+</div>
+
+<!-- SPLASH SCREEN -->
+<div id="splash" class="screen active">
+  <div class="splash-hero">🔥🌊🏠⚠️</div>
+  <div class="splash-card">
+    <h3 id="lbl-username">Enter User Name</h3>
+    <input type="text" id="username-input" placeholder="Your name..." maxlength="30"/>
+    <p class="tagline" id="lbl-tagline">Play. Learn. Survive</p>
+    <div class="dots">
+      <div class="dot"></div><div class="dot active"></div><div class="dot"></div>
+    </div>
+    <button class="btn-circle" onclick="goToDisasterSelect()">
+      <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- DISASTER SELECT -->
+<div id="disaster-select" class="screen">
+  <div class="ds-header">
+    <p id="lbl-select">Select Your</p>
+    <h2>DISASTER</h2>
+  </div>
+  <div class="disaster-grid">
+    <div class="disaster-card" onclick="selectDisaster('earthquake')"><div class="icon">🏚️</div><span id="d-earthquake">Earthquake</span></div>
+    <div class="disaster-card" onclick="selectDisaster('volcano')"><div class="icon">🌋</div><span id="d-volcano">Volcano</span></div>
+    <div class="disaster-card" onclick="selectDisaster('cyclone')"><div class="icon">🌀</div><span id="d-cyclone">Cyclone</span></div>
+    <div class="disaster-card" onclick="selectDisaster('flood')"><div class="icon">🌊</div><span id="d-flood">Flood</span></div>
+    <div class="disaster-card" onclick="selectDisaster('fire')"><div class="icon">🔥</div><span id="d-fire">Fire</span></div>
+    <div class="disaster-card" onclick="selectDisaster('tsunami')"><div class="icon">🏄</div><span id="d-tsunami">Tsunami</span></div>
+  </div>
+</div>
+
+<!-- LEVEL MAP -->
+<div id="level-map" class="screen">
+  <div class="map-header">
+    <button class="back-btn" onclick="showScreen('disaster-select')">‹</button>
+    <h2 id="lbl-unlock">Unlock Your Level</h2>
+  </div>
+  <div class="level-path" id="level-path"></div>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz-screen" class="screen">
+  <div class="quiz-header">
+    <button class="back-btn" onclick="showScreen('level-map')">‹</button>
+    <h3 id="quiz-level-title">Level 1</h3>
+    <div class="score-badge" id="score-display">0 pts</div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:10%"></div></div>
+  <div class="question-card">
+    <div class="q-image" id="q-image">🏚️</div>
+    <p class="q-text" id="q-text"></p>
+  </div>
+  <div class="options" id="options-container"></div>
+  <div class="feedback-box" id="feedback-box" style="display:none;"><p id="feedback-text"></p></div>
+  <button class="next-btn" id="next-btn" style="display:none;" onclick="nextQuestion()">Next ➜</button>
+</div>
+
+<!-- RESULTS -->
+<div id="results" class="screen">
+  <div class="result-icon" id="result-icon">✅</div>
+  <h2 id="result-title">GOOD JOB!</h2>
+  <div class="stars" id="result-stars"></div>
+  <p id="result-pts">You Earned 10 pts</p>
+  <div class="wrong-answers" id="wrong-summary" style="display:none;"></div>
+  <div class="res-btns">
+    <button class="res-btn primary" id="next-level-btn" onclick="goNextLevel()">Next Level 🔓</button>
+    <button class="res-btn secondary" onclick="replayLevel()">Play Again 🔁</button>
+    <button class="res-btn secondary" onclick="showScreen('disaster-select')">Change Disaster 🌍</button>
+  </div>
+</div>
+
+<!-- CERTIFICATE -->
+<div id="certificate" class="screen">
+  <div class="cert-inner">
+    <div class="cert-border">
+      <h4>🏅 CERTIFICATE OF COMPLETION</h4>
+      <h2>Disaster Preparedness</h2>
+      <p>This certifies that</p>
+      <div class="cert-name" id="cert-name">Hero</div>
+      <p>has successfully completed all levels of<br><strong id="cert-disaster">Earthquake</strong> preparedness training</p>
+      <div class="cert-score" id="cert-score">Total Score: 50 pts</div>
+      <p style="font-size:11px;color:rgba(255,255,255,0.6);">Play. Learn. Survive. 🌍</p>
+      <button class="cert-btn" onclick="showScreen('disaster-select')">Play Another Disaster 🔄</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+var state = {
+  username: 'Hero',
+  disaster: '',
+  currentLevel: 0,
+  score: 0,
+  totalScore: 0,
+  qIndex: 0,
+  answered: false,
+  unlockedLevels: {},
+  levelScores: [],
+  wrongAnswers: [],
+  lang: 'en',
+  fontSize: 14
+};
+
+var translations = {
+  en: { username:'Enter User Name', tagline:'Play. Learn. Survive', select:'Select Your', unlock:'Unlock Your Level', level:'Level', next:'Next ➜', correct:'Correct!', wrong:'Incorrect!', earned:'You Earned', pts:'pts', goodjob:'GOOD JOB!', tryagain:'KEEP TRYING!', perfect:'PERFECT!' },
+  hi: { username:'उपयोगकर्ता नाम दर्ज करें', tagline:'खेलें। सीखें। बचें।', select:'चुनें अपनी', unlock:'अपना स्तर अनलॉक करें', level:'स्तर', next:'आगे ➜', correct:'सही!', wrong:'गलत!', earned:'आपने कमाए', pts:'अंक', goodjob:'शाबाश!', tryagain:'फिर कोशिश करें!', perfect:'परफेक्ट!' },
+  mr: { username:'वापरकर्ता नाव टाका', tagline:'खेळा. शिका. वाचा.', select:'निवडा तुमची', unlock:'तुमचा स्तर अनलॉक करा', level:'स्तर', next:'पुढे ➜', correct:'बरोबर!', wrong:'चुकीचे!', earned:'तुम्ही मिळवले', pts:'गुण', goodjob:'शाबास!', tryagain:'पुन्हा प्रयत्न करा!', perfect:'परिपूर्ण!' }
+};
+
+var disasters = {
+  earthquake: {
+    name: 'Earthquake', icon: '🏚️',
+    levels: [
+      { title:'School Scenario', icon:'🏫', q:'You are in class and the ground starts shaking suddenly. What will you do?', opts:['Use the lift immediately','Hide under the desk','Go near the window'], correct:1, exp:'Drop, Cover, Hold On! Hide under a sturdy desk away from windows. Never use lifts during earthquakes.' },
+      { title:'Home Scenario', icon:'🏠', q:'An earthquake hits while you are at home. What should you NOT do?', opts:['Stand in a doorframe','Run outside immediately','Stay away from heavy furniture'], correct:1, exp:'Running outside during shaking is dangerous due to falling debris. Stay inside, drop and cover until shaking stops.' },
+      { title:'Outdoor Scenario', icon:'🌳', q:'You are outside when an earthquake occurs. What is the safest action?', opts:['Move away from buildings & trees','Run into a building','Lie flat on the road'], correct:0, exp:'Move to open space away from buildings, trees, streetlights, and power lines to avoid falling objects.' },
+      { title:'After Earthquake', icon:'🔦', q:'After the shaking stops, what should you check FIRST?', opts:['Turn on the TV','Check for gas leaks & injuries','Use the elevator to check other floors'], correct:1, exp:'First check for injuries and gas leaks. A gas leak can cause explosion. Never use elevators after an earthquake.' },
+      { title:'Supplies', icon:'🎒', q:'What should your earthquake emergency kit contain?', opts:['Only food and water','First aid, water, torch, radio, documents','Just a mobile phone'], correct:1, exp:'An emergency kit should include first aid supplies, water (3 days), torch, battery radio, important documents, and non-perishable food.' }
+    ]
+  },
+  fire: {
+    name: 'Fire', icon: '🔥',
+    levels: [
+      { title:'Building Fire', icon:'🏢', q:'There is a fire in your building. What is the FIRST thing you do?', opts:['Use the elevator to escape fast','Activate fire alarm & use stairs','Open all windows'], correct:1, exp:'Always activate the fire alarm first to warn others, then evacuate using stairs. NEVER use elevators in a fire.' },
+      { title:'Smoke Check', icon:'💨', q:'Before opening a door during a fire, you should:', opts:['Kick it open quickly','Feel the door with back of your hand','Shout for help'], correct:1, exp:'Feel the door with the back of your hand. If hot, do NOT open it — fire or smoke is on the other side. Find another exit.' },
+      { title:'Clothes on Fire', icon:'🧍', q:'Your clothes catch fire. What do you do?', opts:['Run to get water','Stop, Drop, and Roll','Fan the flames with your hands'], correct:1, exp:'STOP moving (running fans flames), DROP to the ground, ROLL to smother the fire. This is the universal response.' },
+      { title:'Fire Extinguisher', icon:'🧯', q:'How do you use a fire extinguisher? Remember PASS:', opts:['Push, Aim, Squeeze, Sweep','Pull, Aim, Squeeze, Sweep','Point, Activate, Smother, Stop'], correct:1, exp:'PASS: Pull the pin, Aim at base of fire, Squeeze the handle, Sweep side to side. Only use if fire is small and contained.' },
+      { title:'Prevention', icon:'🕯️', q:'Which is the most common cause of house fires?', opts:['Candles left unattended','Overloaded electrical sockets','Both are equally dangerous'], correct:2, exp:'Both unattended candles and overloaded electrical sockets are major causes of house fires. Always unplug unused appliances and never leave flames unattended.' }
+    ]
+  },
+  flood: {
+    name: 'Flood', icon: '🌊',
+    levels: [
+      { title:'Flash Flood', icon:'🌧️', q:'A flash flood warning is issued. You are at home. What do you do first?', opts:['Move to higher ground immediately','Wait to see if it gets worse','Go to the basement'], correct:0, exp:'Move to higher ground immediately. Flash floods can rise within minutes. Never go to a basement — you could get trapped.' },
+      { title:'Driving in Flood', icon:'🚗', q:'You encounter a flooded road while driving. What should you do?', opts:['Drive slowly through it','Turn around, never drown','Speed through to clear water quickly'], correct:1, exp:'"Turn Around, Don\'t Drown!" Just 15 cm of water can knock you over, and 60 cm can sweep away a car. Never risk it.' },
+      { title:'Flood Water', icon:'💧', q:'Why should you avoid walking through flood water?', opts:['It ruins your shoes','It may be contaminated and have hidden hazards','It is too cold'], correct:1, exp:'Floodwater is often contaminated with sewage, chemicals, and debris. Hidden objects or open manholes can also cause serious injury.' },
+      { title:'After Flood', icon:'🏚️', q:'After a flood, before re-entering your home you should:', opts:['Check structural safety & turn off electricity','Rush in to check your belongings','Open all windows and doors immediately'], correct:0, exp:'Check if the building is structurally safe. Turn off electricity before entering. Document damage before cleaning for insurance.' },
+      { title:'Emergency Kit', icon:'🎒', q:'What is most important to have ready before flood season?', opts:['A boat','Emergency go-bag with documents, water, medicines','A large umbrella'], correct:1, exp:'Prepare a go-bag with important documents (waterproof bag), water, medications, first aid kit, torch, cash, and emergency contacts.' }
+    ]
+  },
+  cyclone: {
+    name: 'Cyclone', icon: '🌀',
+    levels: [
+      { title:'Before Cyclone', icon:'🏠', q:'A cyclone warning is issued 48 hours in advance. What should you do?', opts:['Stay and watch from your window','Prepare emergency kit & secure loose items','Wait for it to pass'], correct:1, exp:'Prepare your emergency kit, secure or bring inside all loose objects, know your evacuation route, and follow official instructions.' },
+      { title:'During Cyclone', icon:'🌀', q:'During a cyclone, the safest place to shelter is:', opts:['Near a window to monitor the storm','Interior room on lowest floor away from windows','In your car in a garage'], correct:1, exp:'Stay in an interior room on the lowest floor away from windows and doors. Interior rooms have no exterior walls that wind can penetrate.' },
+      { title:'Eye of Storm', icon:'👁️', q:'The winds suddenly become calm. This means:', opts:['The cyclone is over — go outside','You are in the eye — danger returns soon','It is safe to check damage'], correct:1, exp:'The calm "eye" of a cyclone is dangerous. Fierce winds WILL return from the opposite direction. Stay sheltered until the all-clear is given.' },
+      { title:'Storm Surge', icon:'🌊', q:'What is a storm surge and why is it dangerous?', opts:['Strong winds that break windows','Ocean water pushed inland by storm — can be deadly','Heavy rainfall causing landslides'], correct:1, exp:'Storm surge is ocean water pushed inland by cyclone winds. It can reach several meters high and is responsible for most cyclone deaths.' },
+      { title:'After Cyclone', icon:'🔌', q:'After a cyclone, which hazard should you be most alert about?', opts:['Fallen power lines','Broken tree branches','Flooded roads'], correct:0, exp:'Fallen or damaged power lines are extremely dangerous. Treat all downed lines as live. Stay away and report to authorities immediately.' }
+    ]
+  },
+  volcano: {
+    name: 'Volcano', icon: '🌋',
+    levels: [
+      { title:'Eruption Warning', icon:'⚠️', q:'Volcano authorities issue an evacuation order. You should:', opts:['Ignore it if lava looks far away','Evacuate immediately following official routes','Take photos first then leave'], correct:1, exp:'Evacuate immediately when authorities order it. Volcanic hazards like pyroclastic flows move extremely fast. Do not delay.' },
+      { title:'Ash Fall', icon:'🌫️', q:'Volcanic ash is falling. To protect yourself you should:', opts:['Go outside to see the eruption','Stay indoors, seal windows, wear masks','Run toward the volcano to evacuate faster'], correct:1, exp:'Stay indoors. Volcanic ash is abrasive and can cause respiratory problems. Seal doors/windows, wear N95 masks if you must go out.' },
+      { title:'Lava Flow', icon:'🔴', q:'Lava is flowing toward your area. The BIGGEST danger is:', opts:['The lava itself moving slowly','Toxic gases and pyroclastic flows moving at high speed','Hot weather from the lava'], correct:1, exp:'Pyroclastic flows (fast-moving clouds of gas and rock) and toxic gases are far more deadly than slow lava flows. Evacuate early.' },
+      { title:'After Volcano', icon:'🏠', q:'After a volcanic eruption, which water source is safe to drink?', opts:['River water near the volcano','Sealed bottled water only','Well water nearby'], correct:1, exp:'Only use sealed bottled water. Ash contaminates rivers, wells, and water systems. Boiling may not remove chemical contaminants.' },
+      { title:'Preparedness', icon:'🎒', q:'Living near a volcano, your most important preparation is:', opts:['Keeping windows open for air flow','Having a pre-planned evacuation route and emergency kit','Building a taller fence'], correct:1, exp:'Know your evacuation routes, practice drills, keep an emergency kit with N95 masks, goggles, and radio for official alerts.' }
+    ]
+  },
+  tsunami: {
+    name: 'Tsunami', icon: '🏄',
+    levels: [
+      { title:'Natural Warning', icon:'🌊', q:'You are at the beach and feel a strong earthquake. You should:', opts:['Stay on beach to watch for waves','Run to higher ground immediately','Call emergency services first'], correct:1, exp:'A strong earthquake near the coast is nature\'s tsunami warning. Run to high ground IMMEDIATELY. Do not wait for an official warning.' },
+      { title:'Ocean Retreats', icon:'🌊', q:'The ocean suddenly pulls back far from the shore (recedes). This means:', opts:['Good time to collect fish','A tsunami wave is coming — evacuate NOW','The tide is going out — normal'], correct:1, exp:'When the sea rapidly recedes, it is drawing back before a massive tsunami wave. You may have only minutes. Run inland immediately.' },
+      { title:'During Tsunami', icon:'🏃', q:'A tsunami warning has been issued. You are inland at 100m elevation. You should:', opts:['Stay where you are','Drive to even higher ground','Go to the beach to help others'], correct:0, exp:'If you are already at safe elevation (above 30m/100ft), stay there. Do not go to lower areas or the coast until all-clear is given.' },
+      { title:'Multiple Waves', icon:'🌊', q:'After the first tsunami wave hits, you should:', opts:['Return to shore — worst is over','Stay on high ground — more waves may follow','Go back to get your belongings'], correct:1, exp:'Tsunamis consist of multiple waves. The first wave is often NOT the largest. Stay on high ground until authorities give the all-clear.' },
+      { title:'Preparedness', icon:'🗺️', q:'The best way to prepare for a tsunami is to:', opts:['Learn to swim very fast','Know evacuation routes and tsunami hazard zones','Buy a boat'], correct:1, exp:'Know your local tsunami hazard zones and evacuation routes. Practice the route with your family. Have an emergency kit ready to go.' }
+    ]
+  }
+};
+
+function setLang(lang) {
+  state.lang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  var t = translations[lang];
+  document.getElementById('lbl-username').textContent = t.username;
+  document.getElementById('lbl-tagline').textContent = t.tagline;
+  document.getElementById('lbl-select').textContent = t.select;
+  document.getElementById('lbl-unlock').textContent = t.unlock;
+}
+
+function setFont(dir) {
+  state.fontSize = Math.max(11, Math.min(18, state.fontSize + dir));
+  document.getElementById('app').style.fontSize = state.fontSize + 'px';
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goToDisasterSelect() {
+  var name = document.getElementById('username-input').value.trim();
+  if (!name) { alert('Please enter your name!'); return; }
+  state.username = name;
+  state.totalScore = 0;
+  state.unlockedLevels = {};
+  showScreen('disaster-select');
+}
+
+function selectDisaster(type) {
+  state.disaster = type;
+  state.unlockedLevels[type] = state.unlockedLevels[type] || 0;
+  buildLevelMap();
+  showScreen('level-map');
+}
+
+function buildLevelMap() {
+  var d = disasters[state.disaster];
+  var unlocked = state.unlockedLevels[state.disaster] || 0;
+  var path = document.getElementById('level-path');
+  path.innerHTML = '';
+  var t = translations[state.lang];
+  for (var i = d.levels.length - 1; i >= 0; i--) {
+    var lv = d.levels[i];
+    var node = document.createElement('div');
+    node.style.display = 'flex';
+    node.style.flexDirection = 'column';
+    node.style.alignItems = 'center';
+    node.style.width = '100%';
+    var row = document.createElement('div');
+    row.style.display = 'flex';
+    row.style.alignItems = 'center';
+    row.style.gap = '16px';
+    row.style.justifyContent = i % 2 === 0 ? 'flex-start' : 'flex-end';
+    row.style.width = '100%';
+    row.style.paddingLeft = i % 2 === 0 ? '40px' : '0';
+    row.style.paddingRight = i % 2 === 0 ? '0' : '40px';
+    var hex = document.createElement('div');
+    hex.className = 'hex';
+    hex.style.fontSize = '24px';
+    if (i < unlocked) {
+      hex.textContent = '✅';
+      hex.className = 'hex done';
+      hex.title = t.level + ' ' + (i+1) + ' - Completed';
+    } else if (i === unlocked) {
+      hex.textContent = lv.icon;
+      hex.className = 'hex current';
+      hex.title = t.level + ' ' + (i+1);
+      (function(idx){ hex.onclick = function(){ startLevel(idx); }; })(i);
+    } else {
+      hex.textContent = '🔒';
+      hex.className = 'hex';
+      hex.style.opacity = '0.5';
+      hex.title = 'Locked';
+    }
+    var info = document.createElement('div');
+    info.innerHTML = '<div style="color:#fff;font-size:14px;font-weight:700;">' + t.level + ' ' + (i+1) + '</div><div style="color:rgba(255,255,255,0.6);font-size:11px;">' + lv.title + '</div>';
+    if (i % 2 === 0) { row.appendChild(hex); row.appendChild(info); }
+    else { row.appendChild(info); row.appendChild(hex); }
+    node.appendChild(row);
+    if (i > 0) {
+      var conn = document.createElement('div');
+      conn.style.cssText = 'width:3px;height:28px;background:#4A4FCF;margin:4px 0;' + (i%2===0?'margin-left:59px;align-self:flex-start;':'margin-right:59px;align-self:flex-end;');
+      node.appendChild(conn);
+    }
+    path.appendChild(node);
+  }
+}
+
+function startLevel(levelIndex) {
+  state.currentLevel = levelIndex;
+  state.score = 0;
+  state.wrongAnswers = [];
+  var d = disasters[state.disaster];
+  var lv = d.levels[levelIndex];
+  var t = translations[state.lang];
+  document.getElementById('quiz-level-title').textContent = t.level + ' ' + (levelIndex + 1) + ' - ' + lv.title;
+  document.getElementById('score-display').textContent = state.totalScore + ' pts';
+  document.getElementById('q-image').textContent = lv.icon;
+  document.getElementById('q-text').textContent = lv.q;
+  document.getElementById('progress-fill').style.width = '20%';
+  document.getElementById('feedback-box').style.display = 'none';
+  document.getElementById('next-btn').style.display = 'none';
+  state.answered = false;
+  var container = document.getElementById('options-container');
+  container.innerHTML = '';
+  lv.opts.forEach(function(opt, idx) {
+    var btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = opt;
+    btn.onclick = function() { selectAnswer(idx, btn); };
+    container.appendChild(btn);
+  });
+  showScreen('quiz-screen');
+}
+
+function selectAnswer(idx, btn) {
+  if (state.answered) return;
+  state.answered = true;
+  var d = disasters[state.disaster];
+  var lv = d.levels[state.currentLevel];
+  var t = translations[state.lang];
+  var isCorrect = idx === lv.correct;
+  var pts = isCorrect ? 10 : 0;
+  state.score += pts;
+  state.totalScore += pts;
+  document.getElementById('score-display').textContent = state.totalScore + ' pts';
+  document.getElementById('progress-fill').style.width = '80%';
+  var allBtns = document.querySelectorAll('.option-btn');
+  allBtns.forEach(function(b, i) {
+    if (i === lv.correct) b.className = 'option-btn correct';
+    else if (i === idx && !isCorrect) b.className = 'option-btn wrong';
+    else b.className = 'option-btn dim';
+    b.disabled = true;
+  });
+  var fb = document.getElementById('feedback-box');
+  var ft = document.getElementById('feedback-text');
+  fb.style.display = 'block';
+  fb.style.background = isCorrect ? 'rgba(39,174,96,0.25)' : 'rgba(231,76,60,0.25)';
+  ft.textContent = (isCorrect ? '✅ ' + t.correct : '❌ ' + t.wrong) + ' ' + lv.exp;
+  if (!isCorrect) state.wrongAnswers.push({ q: lv.q, correct: lv.opts[lv.correct] });
+  document.getElementById('next-btn').style.display = 'block';
+  document.getElementById('next-btn').textContent = t.next;
+}
+
+function nextQuestion() {
+  document.getElementById('progress-fill').style.width = '100%';
+  showResults();
+}
+
+function showResults() {
+  var d = disasters[state.disaster];
+  var lv = d.levels[state.currentLevel];
+  var t = translations[state.lang];
+  var correct = state.score > 0;
+  document.getElementById('result-icon').textContent = correct ? '✅' : '❌';
+  var title = correct ? t.goodjob : t.tryagain;
+  document.getElementById('result-title').textContent = title;
+  var stars = correct ? 2 : 1;
+  var starsEl = document.getElementById('result-stars');
+  starsEl.innerHTML = '';
+  for (var i = 0; i < 3; i++) {
+    var s = document.createElement('span');
+    s.className = 'star';
+    s.textContent = i < stars ? '⭐' : '☆';
+    starsEl.appendChild(s);
+  }
+  document.getElementById('result-pts').textContent = t.earned + ' ' + state.score + ' ' + t.pts;
+  var ws = document.getElementById('wrong-summary');
+  if (state.wrongAnswers.length > 0) {
+    ws.style.display = 'block';
+    ws.innerHTML = '<p style="color:#FFD700;font-weight:700;margin-bottom:6px;">Learn from mistakes:</p>' + state.wrongAnswers.map(function(w){ return '<p>Q: ' + w.q + '<br><strong style="color:#4AE" >✅ ' + w.correct + '</strong></p>'; }).join('');
+  } else {
+    ws.style.display = 'none';
+  }
+  var isLastLevel = state.currentLevel >= d.levels.length - 1;
+  var nextBtn = document.getElementById('next-level-btn');
+  if (isLastLevel) {
+    nextBtn.textContent = '🏅 Get Certificate';
+    nextBtn.onclick = showCertificate;
+  } else {
+    nextBtn.textContent = 'Next Level 🔓';
+    nextBtn.onclick = goNextLevel;
+    nextBtn.style.display = correct ? 'block' : 'none';
+  }
+  if (correct) {
+    var ul = state.unlockedLevels[state.disaster] || 0;
+    if (state.currentLevel >= ul) {
+      state.unlockedLevels[state.disaster] = state.currentLevel + 1;
+    }
+  }
+  showScreen('results');
+}
+
+function goNextLevel() {
+  var nextLv = state.currentLevel + 1;
+  var d = disasters[state.disaster];
+  if (nextLv >= d.levels.length) { showCertificate(); return; }
+  startLevel(nextLv);
+}
+
+function replayLevel() {
+  startLevel(state.currentLevel);
+}
+
+function showCertificate() {
+  document.getElementById('cert-name').textContent = state.username;
+  document.getElementById('cert-disaster').textContent = disasters[state.disaster].name;
+  document.getElementById('cert-score').textContent = 'Total Score: ' + state.totalScore + ' pts';
+  showScreen('certificate');
+}
+</script>
+</body>
+</html>
